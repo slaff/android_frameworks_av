@@ -86,6 +86,9 @@ cc_library_shared {
             },
             has_legacy_camera_hal1: {
                 cflags: ["-DTARGET_HAS_LEGACY_CAMERA_HAL1"],
+        qualcomm: {
+            targetUsesQCOMLegacyBsp: {
+                cflags: [ "-DQCOM_BSP_LEGACY", ],
             },
         },
     },
