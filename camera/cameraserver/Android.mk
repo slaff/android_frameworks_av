@@ -40,3 +40,4 @@ LOCAL_INIT_RC := cameraserver.rc
 
 include $(BUILD_EXECUTABLE)
 endif
+endif
