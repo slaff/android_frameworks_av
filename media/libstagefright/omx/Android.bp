@@ -84,9 +84,7 @@ cc_library_shared {
             uses_qcom_bsp_legacy: {
                 cppflags: ["-DQCOM_BSP_LEGACY"],
             },
-        },
-	jdc: {
-            uses_media_extensions: {
+	    uses_media_extensions: {
                 cflags: ["-DTARGET_USES_MEDIA_EXTENSIONS"],
             },
             has_legacy_camera_hal1: {
