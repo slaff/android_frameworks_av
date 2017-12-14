@@ -80,7 +80,7 @@ cc_library_shared {
     ],
 
     product_variables: {
-        jdc: {
+        lineage: {
             uses_media_extensions: {
                 cflags: ["-DTARGET_USES_MEDIA_EXTENSIONS"],
             },
