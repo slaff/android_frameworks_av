@@ -80,9 +80,9 @@ cc_library_shared {
     ],
 
     product_variables: {
-        qualcomm: {
-            targetUsesQCOMLegacyBsp: {
-                cflags: [ "-DQCOM_BSP_LEGACY", ],
+        lineage: {
+            uses_qcom_bsp_legacy: {
+                cppflags: ["-DQCOM_BSP_LEGACY"],
             },
         },
     },
