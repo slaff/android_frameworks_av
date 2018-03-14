@@ -142,7 +142,7 @@ cc_library_shared {
     ],
 
     product_variables: {
-        lineage: {
+        jdc: {
             has_legacy_camera_hal1: {
                 cflags: [ "-DCAMCORDER_GRALLOC_SOURCE", ],
             },
