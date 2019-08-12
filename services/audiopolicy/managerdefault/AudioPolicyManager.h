@@ -414,7 +414,7 @@ protected:
         // must be called every time a condition that affects the output choice for a given strategy
         // changes: connected device, phone state, force use...
         // Must be called before updateDevicesAndOutputs()
-        void checkOutputForStrategy(routing_strategy strategy);
+        virtual void checkOutputForStrategy(routing_strategy strategy);
 
         // Same as checkOutputForStrategy() but for a all strategies in order of priority
         void checkOutputForAllStrategies();
@@ -658,7 +658,7 @@ protected:
                 audio_source_t inputSource,
                 const audio_config_base_t *config,
                 audio_input_flags_t flags,
-                AudioMix *policyMix);
+                const sp<AudioPolicyMix> &policyMix);
 
         // internal function to derive a stream type value from audio attributes
         audio_stream_type_t streamTypefromAttributesInt(const audio_attributes_t *attr);
@@ -672,7 +672,7 @@ protected:
         // select input device corresponding to requested audio source and return associated policy
         // mix if any. Calls getDeviceForInputSource().
         audio_devices_t getDeviceAndMixForInputSource(audio_source_t inputSource,
-                                                        AudioMix **policyMix = NULL);
+                                                      sp<AudioPolicyMix> *policyMix = NULL);
 
         // Called by setDeviceConnectionState().
         virtual status_t setDeviceConnectionStateInt(audio_devices_t device,
