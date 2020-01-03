@@ -377,7 +377,7 @@ OMXNodeInstance::OMXNodeInstance(
     mGraphicBufferEnabled[0] = false;
     mGraphicBufferEnabled[1] = false;
     mIsSecure = AString(name).endsWith(".secure");
-    mLegacyAdaptiveExperiment = ADebug::isExperimentEnabled("legacy-adaptive");
+    mLegacyAdaptiveExperiment = true;
 }
 
 OMXNodeInstance::~OMXNodeInstance() {
