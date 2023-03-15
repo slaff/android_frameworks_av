@@ -18,9 +18,9 @@
 #define LOG_TAG "AAVCAssembler"
 #include <utils/Log.h>
 
-#include "AAVCAssembler.h"
+#include <media/stagefright/rtsp/AAVCAssembler.h>
 
-#include "ARTPSource.h"
+#include <media/stagefright/rtsp/ARTPSource.h>
 
 #include <media/stagefright/foundation/ABuffer.h>
 #include <media/stagefright/foundation/ADebug.h>
@@ -332,6 +332,11 @@ void AAVCAssembler::checkIFrameProvided(const sp<ABuffer> &buffer) {
 }
 
 bool AAVCAssembler::dropFramesUntilIframe(const sp<ABuffer> &buffer) {
+    if (buffer->size() == 0) {
+        ALOGE("b/230630526 buffer->size() == 0");
+        android_errorWriteLog(0x534e4554, "230630526");
+        return false;
+    }
     const uint8_t *data = buffer->data();
     unsigned nalType = data[0] & 0x1f;
     if (!mFirstIFrameProvided && nalType < 0x5) {
@@ -618,13 +623,13 @@ void AAVCAssembler::submitAccessUnit() {
 
 int32_t AAVCAssembler::pickStartSeq(const Queue *queue,
         uint32_t first, int64_t play, int64_t jit) {
+    CHECK(!queue->empty());
     // pick the first sequence number has the start bit.
     sp<ABuffer> buffer = *(queue->begin());
     int32_t firstSeqNo = buffer->int32Data();
 
     // This only works for FU-A type & non-start sequence
-    unsigned nalType = buffer->data()[0] & 0x1f;
-    if (nalType != 28 || buffer->data()[1] & 0x80) {
+    if (buffer->size() < 2 || (buffer->data()[0] & 0x1f) != 28 || buffer->data()[1] & 0x80) {
         return firstSeqNo;
     }
 
@@ -634,7 +639,7 @@ int32_t AAVCAssembler::pickStartSeq(const Queue *queue,
         if (rtpTime + jit >= play) {
             break;
         }
-        if ((data[1] & 0x80)) {
+        if (it->size() >= 2 && (data[1] & 0x80)) {
             const int32_t seqNo = it->int32Data();
             ALOGE("finding [HEAD] pkt. \t Seq# (%d ~ )[%d", firstSeqNo, seqNo);
             firstSeqNo = seqNo;

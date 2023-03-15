@@ -679,9 +679,11 @@ status_t CameraSource::initWithCameraAccess(
     // Set the preview display. Skip this if mSurface is null because
     // applications may already set a surface to the camera.
     if (mSurface != NULL) {
-        // This CHECK is good, since we just passed the lock/unlock
-        // check earlier by calling mCamera->setParameters().
-        CHECK_EQ((status_t)OK, mCamera->setPreviewTarget(mSurface));
+        // Surface may be set incorrectly or could already be used even if we just
+        // passed the lock/unlock check earlier by calling mCamera->setParameters().
+        if ((err = mCamera->setPreviewTarget(mSurface)) != OK) {
+            return err;
+        }
     }
 
     // By default, store real data in video buffers.

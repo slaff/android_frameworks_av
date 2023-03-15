@@ -18,14 +18,14 @@
 #define LOG_TAG "AHEVCAssembler"
 #include <utils/Log.h>
 
-#include "AHEVCAssembler.h"
+#include <media/stagefright/rtsp/AHEVCAssembler.h>
 
-#include "ARTPSource.h"
+#include <media/stagefright/rtsp/ARTPSource.h>
 
+#include <HevcUtils.h>
 #include <media/stagefright/foundation/ABuffer.h>
 #include <media/stagefright/foundation/ADebug.h>
 #include <media/stagefright/foundation/AMessage.h>
-#include <include/HevcUtils.h>
 #include <media/stagefright/foundation/hexdump.h>
 
 #include <stdint.h>
@@ -629,13 +629,13 @@ void AHEVCAssembler::submitAccessUnit() {
 
 int32_t AHEVCAssembler::pickStartSeq(const Queue *queue,
         uint32_t first, int64_t play, int64_t jit) {
+    CHECK(!queue->empty());
     // pick the first sequence number has the start bit.
     sp<ABuffer> buffer = *(queue->begin());
     int32_t firstSeqNo = buffer->int32Data();
 
     // This only works for FU-A type & non-start sequence
-    unsigned nalType = buffer->data()[0] & 0x1f;
-    if (nalType != 28 || buffer->data()[2] & 0x80) {
+    if (buffer->size() < 3 || (buffer->data()[0] & 0x1f) != 28 || buffer->data()[2] & 0x80) {
         return firstSeqNo;
     }
 
@@ -645,7 +645,7 @@ int32_t AHEVCAssembler::pickStartSeq(const Queue *queue,
         if (rtpTime + jit >= play) {
             break;
         }
-        if ((data[2] & 0x80)) {
+        if (it->size() >= 3 && (data[2] & 0x80)) {
             const int32_t seqNo = it->int32Data();
             ALOGE("finding [HEAD] pkt. \t Seq# (%d ~ )[%d", firstSeqNo, seqNo);
             firstSeqNo = seqNo;

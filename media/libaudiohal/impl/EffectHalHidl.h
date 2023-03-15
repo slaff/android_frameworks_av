@@ -23,16 +23,17 @@
 #include <fmq/MessageQueue.h>
 #include <system/audio_effect.h>
 
+#include "EffectConversionHelperHidl.h"
+
 using ::android::hardware::EventFlag;
 using ::android::hardware::MessageQueue;
 
 namespace android {
 namespace effect {
-namespace CPP_VERSION {
 
 using namespace ::android::hardware::audio::effect::CPP_VERSION;
 
-class EffectHalHidl : public EffectHalInterface
+class EffectHalHidl : public EffectHalInterface, public EffectConversionHelperHidl
 {
   public:
     // Set the input buffer.
@@ -63,7 +64,7 @@ class EffectHalHidl : public EffectHalInterface
 
     virtual status_t dump(int fd);
 
-    uint64_t effectId() const { return mEffectId; }
+    virtual uint64_t effectId() const { return mEffectId; }
 
   private:
     friend class EffectsFactoryHalHidl;
@@ -77,8 +78,11 @@ class EffectHalHidl : public EffectHalInterface
     std::unique_ptr<StatusMQ> mStatusMQ;
     EventFlag* mEfGroup;
     bool mIsInput = false;
-
-    static status_t analyzeResult(const Result& result);
+    static constexpr int32_t kRTPriorityMin = 1;
+    static constexpr int32_t kRTPriorityMax = 3;
+    static constexpr int kRTPriorityDisabled = 0;
+    // Typical RealTime mHalThreadPriority ranges from 1 (low) to 3 (high).
+    int mHalThreadPriority = kRTPriorityDisabled;
 
     // Can not be constructed directly by clients.
     EffectHalHidl(const sp<IEffect>& effect, uint64_t effectId);
@@ -94,9 +98,12 @@ class EffectHalHidl : public EffectHalInterface
             uint32_t cmdCode, uint32_t cmdSize, void *pCmdData,
             uint32_t *replySize, void *pReplyData);
     status_t setProcessBuffers();
+    status_t getHalPid(pid_t *pid) const;
+    status_t getHalWorkerTid(pid_t *tid);
+    bool requestHalThreadPriority(pid_t threadPid, pid_t threadId);
+    status_t checkHalThreadPriority();
 };
 
-} // namespace CPP_VERSION
 } // namespace effect
 } // namespace android
 
