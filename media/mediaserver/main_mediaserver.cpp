@@ -25,6 +25,10 @@
 #include <utils/Log.h>
 #include "RegisterExtensions.h"
 
+#ifdef NO_CAMERA_SERVER
+#include "CameraService.h"
+#include <hidl/HidlTransportSupport.h>
+#endif
 #include <MediaPlayerService.h>
 #include <ResourceManagerService.h>
 

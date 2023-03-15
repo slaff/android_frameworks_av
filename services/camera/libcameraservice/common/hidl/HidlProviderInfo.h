@@ -67,6 +67,8 @@ struct HidlProviderInfo : public CameraProviderManager::ProviderInfo,
     // Helper for initializeDeviceInfo to use the right CameraProvider get method.
     sp<hardware::camera::device::V3_2::ICameraDevice>
             startDeviceInterface(const std::string &deviceName);
+    sp<hardware::camera::device::V1_0::ICameraDevice>
+                startDeviceInterface(const std::string &deviceName);
 
     // ICameraProviderCallbacks interface - these lock the parent mInterfaceMutex
     hardware::Return<void> cameraDeviceStatusChange(
@@ -108,6 +110,7 @@ struct HidlProviderInfo : public CameraProviderManager::ProviderInfo,
                 bool overrideForPerfClass, camera3::metadataGetter getMetadata,
                 bool *status/*status*/);
         sp<hardware::camera::device::V3_2::ICameraDevice> startDeviceInterface();
+        sp<hardware::camera::device::V1_0::ICameraDevice> startDeviceInterface();
     };
 
  private:

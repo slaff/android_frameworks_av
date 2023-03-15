@@ -60,6 +60,7 @@ status_t CameraFlashlight::createFlashlightControl(const String8& cameraId) {
         // Only HAL1 devices do not support setTorchMode
         mFlashControl =
                 new CameraHardwareInterfaceFlashControl(mProviderManager, mCallbacks);
+
     }
 
     return OK;

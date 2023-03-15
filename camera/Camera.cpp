@@ -372,6 +372,20 @@ void Camera::notifyCallback(int32_t msgType, int32_t ext1, int32_t ext2)
 void Camera::dataCallback(int32_t msgType, const sp<IMemory>& dataPtr,
                           camera_frame_metadata_t *metadata)
 {
+
+    // If recording proxy listener is registered, forward the frame and return.
+    // The other listener (mListener) is ignored because the receiver needs to
+    // call releaseRecordingFrame.
+    sp<ICameraRecordingProxyListener> proxylistener;
+    {
+        Mutex::Autolock _l(mLock);
+        proxylistener = mRecordingProxyListener;
+    }
+    if (proxylistener != NULL) {
+        proxylistener->dataCallbackTimestamp(timestamp, msgType, dataPtr);
+        return;
+    }
+
     sp<CameraListener> listener;
     {
         Mutex::Autolock _l(mLock);

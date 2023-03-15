@@ -319,6 +319,33 @@ status_t HidlProviderInfo::notifyDeviceStateChange(int64_t newDeviceState) {
     return OK;
 }
 
+sp<device::V1_0::ICameraDevice>
+HidlProviderInfo::startDeviceInterface(const std::string &name) {
+    Status status;
+    sp<device::V1_0::ICameraDevice> cameraInterface;
+    hardware::Return<void> ret;
+    const sp<provider::V2_4::ICameraProvider> interface = startProviderInterface();
+    if (interface == nullptr) {
+        return nullptr;
+    }
+    ret = interface->getCameraDeviceInterface_V1_x(name, [&status, &cameraInterface](
+        Status s, sp<device::V1_0::ICameraDevice> interface) {
+                status = s;
+                cameraInterface = interface;
+            });
+    if (!ret.isOk()) {
+        ALOGE("%s: Transaction error trying to obtain interface for camera device %s: %s",
+                __FUNCTION__, name.c_str(), ret.description().c_str());
+        return nullptr;
+    }
+    if (status != Status::OK) {
+        ALOGE("%s: Unable to obtain interface for camera device %s: %s", __FUNCTION__,
+                name.c_str(), statusToString(status));
+        return nullptr;
+    }
+    return cameraInterface;
+}
+
 sp<device::V3_2::ICameraDevice>
 HidlProviderInfo::startDeviceInterface(const std::string &name) {
     Status status;
@@ -778,6 +805,38 @@ status_t HidlProviderInfo::HidlDeviceInfo3::turnOnTorchWithStrengthLevel(
 status_t HidlProviderInfo::HidlDeviceInfo3::getTorchStrengthLevel(int32_t * /*torchStrength*/) {
     ALOGE("%s HIDL does not support variable torch strength level", __FUNCTION__);
     return INVALID_OPERATION;
+}
+
+sp<hardware::camera::device::V1_0::ICameraDevice>
+HidlProviderInfo::HidlDeviceInfo3::startDeviceInterface() {
+    Mutex::Autolock l(mDeviceAvailableLock);
+    sp<hardware::camera::device::V1_0::ICameraDevice> device;
+    ATRACE_CALL();
+    if (mSavedInterface == nullptr) {
+        sp<HidlProviderInfo> parentProvider =
+                static_cast<HidlProviderInfo *>(mParentProvider.promote().get());
+        if (parentProvider != nullptr) {
+            // Wait for lazy HALs to confirm device availability
+            if (parentProvider->isExternalLazyHAL() && !mIsDeviceAvailable) {
+                ALOGV("%s: Wait for external device to become available %s",
+                      __FUNCTION__,
+                      mId.c_str());
+
+                auto res = mDeviceAvailableSignal.waitRelative(mDeviceAvailableLock,
+                                                         kDeviceAvailableTimeout);
+                if (res != OK) {
+                    ALOGE("%s: Failed waiting for device to become available",
+                          __FUNCTION__);
+                    return nullptr;
+                }
+            }
+
+            device = parentProvider->startDeviceInterface(mName);
+        }
+    } else {
+        device = (hardware::camera::device::V1_0::ICameraDevice *) mSavedInterface.get();
+    }
+    return device;
 }
 
 sp<hardware::camera::device::V3_2::ICameraDevice>

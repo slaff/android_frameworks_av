@@ -30,7 +30,7 @@ class Parcel;
 
 /*
  * The purpose of ICameraRecordingProxy and ICameraRecordingProxyListener is to
- * allow applications using the camera during recording.
+ * allow applications to use the camera during recording with the old camera API.
  *
  * Camera service allows only one client at a time. Since camcorder application
  * needs to own the camera to do things like zoom, the media recorder cannot

@@ -173,4 +173,3 @@ status_t BnCameraRecordingProxy::onTransact(
 // ----------------------------------------------------------------------------
 
 }; // namespace android
-
